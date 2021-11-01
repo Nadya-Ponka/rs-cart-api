@@ -1,18 +1,15 @@
 FROM node:14.18.1-alpine as dev
-WORKDIR ./
+WORKDIR /app
 COPY package*.json ./
 RUN npm install && npm cache clean --force
 COPY . .
 RUN npm run build
 
 FROM node:14.18.1-alpine as prod
-ARG NODE_ENV=prod
-ENV NODE_ENV=${NODE_ENV}
-WORKDIR ./
-COPY --from=dev package*.json ./
+COPY --from=dev /app/package*.json ./
 RUN npm install --only=prod
-COPY . .
-COPY --from=dev ./dist ./dist
+COPY --from=dev /app/dist ./dist
 USER node
-EXPOSE 4000
+ENV PORT=8080
+EXPOSE 8080
 CMD ["node", "dist/main.js"]
